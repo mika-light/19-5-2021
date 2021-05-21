@@ -1,0 +1,74 @@
+.dashboard {
+    width: 100%;
+    display: flex;
+
+    &__sidebar {
+        width: 25%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        border-right: 1px solid rgb(80, 80, 80);
+        
+        &-list {
+            list-style: none;
+            margin-top: 50px;
+        }
+
+        &-item {
+            font-size: 19px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            color: lightgray;
+
+            &:hover {
+                color: blue;
+
+                & a {
+                    color: blue;
+                }
+            }
+
+            & a {
+                color: lightgray;
+                text-decoration: none;
+
+                &:hover {
+                    color: blue;
+                }
+            }
+        }
+    }
+
+    &__content {
+        width: 75%;
+
+        &-inside {
+            width: auto;
+            height: 100%;
+            padding: 40px;
+            margin-right: 40px;
+            border-right: 1px solid rgb(80, 80, 80);
+        }
+
+        &-title {
+            text-align: start;
+            font-size: 24px;
+            font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+        }
+
+        &-search {
+            margin: 16px 0 16px 0;
+            flex: 1;
+        }
+
+        &-add {
+            width: 100px;
+            font-size: 15px;
+            padding: 4px 7px;
+            margin: 16px 0 16px 40px;
+        }
+    }
+}
