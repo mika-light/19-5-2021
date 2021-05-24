@@ -1,5 +1,6 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
+import firebaseApp from "../../../configs/firebase";
 import { PATH } from "../../../util/constants";
 import { useRegister } from "./firebaseAuth";
 
@@ -14,13 +15,21 @@ export const useLogin = () => {
     const register = useRegister;
     const history = useHistory();
 
+    useEffect(() => {
+        firebaseApp.auth().onAuthStateChanged((user) => {
+            if (user) {
+                history.push(PATH.DASHBOARD_TEACHERS_PATH);
+            }
+        });
+    }, [history]);
+
     const handleSubmit = (event: any) => {
         event.preventDefault();
         SetLoadding(true);
         register(email, password)
             .then((result) => {
                 if (result === 'success') {
-                    history.replace(PATH.DASHBOARD_PATH)
+                    history.push(PATH.DASHBOARD_PATH);
                 } else {
                     setErrorMessage(result);
                     setShowModal(true);

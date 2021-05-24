@@ -1,62 +1,51 @@
 import '../styles/index.scss';
 import { PATH } from '../../../util/constants';
-import { Link } from 'react-router-dom';
-import { useDashboard, useRemoveUid } from '../hooks/useDashboard'
-import { InputGroup, FormControl, Button, Modal } from 'react-bootstrap';
+import { Link, Route, Switch } from 'react-router-dom';
+import { useSignOut, useTeacherManage } from '../hooks/useDashboard'
+import { InputGroup, FormControl, Button, Modal, Form, Col, Table, Pagination } from 'react-bootstrap';
 
 
 function Sidebar() {
-    const removeUid = useRemoveUid();
+    const handleSignOut = useSignOut();
 
     return (<div className="dashboard__sidebar">
         <ul className="dashboard__sidebar-list">
             <li className="dashboard__sidebar-item">
                 <i className="fas fa-chalkboard-teacher mr-3"></i>
-                <Link to={PATH.DASHBOARD_TEACHERS_PATH}>Teachers</Link>
+                <Link className="w-100 text-left" to={PATH.DASHBOARD_TEACHERS_PATH}>Teacher</Link>
             </li>
             <li className="dashboard__sidebar-item">
                 <i className="fas fa-user-graduate mr-3"></i>
-                <Link to={PATH.DASHBOARD_STUDENT_PATH}>Students</Link>
+                <Link className="w-100 text-left" to={PATH.DASHBOARD_STUDENT_PATH}>Student</Link>
             </li>
             <li className="dashboard__sidebar-item">
                 <i className="fas fa-university mr-3"></i>
-                <Link to={PATH.DASHBOARD_CLASSES_PATH}>Classes</Link>
+                <Link className="w-100 text-left" to={PATH.DASHBOARD_CLASSES_PATH}>Class</Link>
             </li>
         </ul>
         <ul className="dashboard__sidebar-list">
             <li className="dashboard__sidebar-item">
                 <i className="fas fa-cog mr-3"></i>
-                <Link to={PATH.DASHBOARD_SETTING_PATH}>Setting</Link>
+                <Link className="w-100 text-left" to={PATH.DASHBOARD_SETTING_PATH}>Setting</Link>
             </li>
-            <li onClick={removeUid} className="dashboard__sidebar-item">
+            <li onClick={handleSignOut} className="dashboard__sidebar-item">
                 <i className="fas fa-sign-out-alt mr-3"></i>
-                <Link to={PATH.LOGIN_PATH}>Sign out</Link>
+                <Link className="w-100 text-left" to={PATH.LOGIN_PATH}>Sign out</Link>
             </li>
         </ul>
     </div>);
 }
 
-const Dashboard = () => {
-    const { title, setting, showModal, setShowModal, handleShowModal } = useDashboard();
+function TeacherManage() {
+    const teacherManage = useTeacherManage();
+    const { showModal, onShowModal, onHideModal, handleChange, handleAddNew, data } = teacherManage();
 
-    if (setting) {
-        return (
-            <div className="dashboard">
-                <Sidebar></Sidebar>
-                <div className="dashboard__content">
-                    <div className="dashboard__content-inside">
-                    </div>
-                </div>
-            </div>
-        )
-    }
     return (
-        <div className="dashboard">
-            <Sidebar></Sidebar>
-            <div className="dashboard__content">
-                <div className="dashboard__content-inside">
-                    <h4 className="dashboard__content-title">{title}</h4>
-                    <div className="d-flex mb-3">
+        <div className="dashboard__content">
+            <div className="dashboard__content-inside">
+                <div className="teacher">
+                    <h4 className="dashboard__content-title">Teacher management</h4>
+                    <div className="d-flex justify-content-between flex-wrap mb-2">
                         <InputGroup className="dashboard__content-search">
                             <InputGroup.Prepend>
                                 <Button variant="secondary">
@@ -65,53 +54,95 @@ const Dashboard = () => {
                                     </label>
                                 </Button>
                             </InputGroup.Prepend>
-                            <FormControl type="search" id="dashboard-content-search" />
+                            <FormControl type="search" placeholder="Search..." id="dashboard-content-search" />
                         </InputGroup>
-                        <Button variant="primary" onClick={handleShowModal}
-                            className="dashboard__content-add">Create new</Button>
+                        <Button onClick={onShowModal} variant="primary" className="dashboard__content-add">Add</Button>
                     </div>
-                    <table className="table table-sm table-striped table-hover table-dark">
+                    <Table size="sm" striped bordered hover responsive variant="dark" className="teacher-list">
                         <thead>
                             <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">First</th>
-                                <th scope="col">Last</th>
-                                <th scope="col">Handle</th>
+                                <th>STT</th>
+                                <th>Full name</th>
+                                <th>Age</th>
+                                <th>Address</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <th scope="row">1</th>
-                                <td>Mark</td>
-                                <td>Otto</td>
-                                <td>@mdo</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">2</th>
-                                <td>Jacob</td>
-                                <td>Thornton</td>
-                                <td>@fat</td>
-                            </tr>
-                            <tr>
-                                <th scope="row">3</th>
-                                <td colSpan={2}>Larry the Bird</td>
-                                <td>@twitter</td>
-                            </tr>
+                            {data.length > 0 ? data.map((item: any, index: number) => {
+                                return (
+                                    <tr key={item.id}>
+                                        <td>{index + 1}</td>
+                                        <td>{`${item.first_name} ${item.last_name}`}</td>
+                                        <td>{item.age}</td>
+                                        <td>{item.address}</td>
+                                        <td></td>
+                                    </tr>
+                                )
+                            }) : <tr><td colSpan={5}>Không có dữ liệu</td></tr>}
                         </tbody>
-                    </table>
+                    </Table>
+                    <Pagination size="sm">
+                        <Pagination.First />
+                        <Pagination.Prev />
+                        <Pagination.Item>{1}</Pagination.Item>
+                        <Pagination.Ellipsis />
+                        <Pagination.Item>{20}</Pagination.Item>
+                        <Pagination.Next />
+                        <Pagination.Last />
+                    </Pagination>
                 </div>
             </div>
-            <Modal size="lg" show={showModal} onHide={() => setShowModal(false)} centered>
-                <Modal.Header closeButton>
-                    <Modal.Title></Modal.Title>
-                </Modal.Header>
+            <Modal show={showModal} onHide={onHideModal} size="lg" centered >
                 <Modal.Body>
+                    <h4 className="mb-3">Teacher add</h4>
+                    <Form onSubmit={handleAddNew}>
+                        <Form.Row className="my-3">
+                            <Col>
+                                <Form.Control onChange={handleChange} required
+                                    name="first_name" placeholder="First name" />
+                            </Col>
+                            <Col>
+                                <Form.Control onChange={handleChange} required
+                                    name="last_name" placeholder="Last name" />
+                            </Col>
+                        </Form.Row>
+                        <Form.Row className="my-3">
+                            <Col>
+                                <Form.Control onChange={handleChange} required
+                                    name="age" placeholder="Age" />
+                            </Col>
+                            <Col>
+                                <Form.Control onChange={handleChange} required
+                                    name="address" placeholder="Address" />
+                            </Col>
+                        </Form.Row>
+                        <Form.Row className="mt-3">
+                            <Col className="d-flex justify-content-end">
+                                <Button type="submit">Add</Button>
+                            </Col>
+                        </Form.Row>
+                    </Form>
                 </Modal.Body>
-                <Modal.Footer>
-                </Modal.Footer>
             </Modal>
         </div>
+    )
+}
+
+const Dashboard = () => {
+    return (
+        <div className="dashboard">
+            <Sidebar />
+            <Switch>
+                <Route exact path={PATH.DASHBOARD_TEACHERS_PATH} component={TeacherManage} />
+                <Route exact path={PATH.DASHBOARD_STUDENT_PATH} component={TeacherManage} />
+                <Route exact path={PATH.DASHBOARD_CLASSES_PATH} component={TeacherManage} />
+                <Route exact path={PATH.DASHBOARD_SETTING_PATH} />
+            </Switch>
+        </div>
+
     )
 };
 
 export default Dashboard;
+

@@ -3,12 +3,10 @@ import { Suspense, lazy } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { PATH } from './util/constants';
-import { BrowserRouter as Router, Switch } from 'react-router-dom';
-import NotFound from './components/NotFound/NotFound';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 import AuthRoute from './configs/AuthRoute';
 
 const Login = lazy(() => import('./containers/Auth/views/Login'));
-const Dashboard = lazy(() => import('./containers/Dashboard/views/Dashboard'));
 
 function App() {
   return (
@@ -18,10 +16,10 @@ function App() {
         <Router>
           <Suspense fallback={<div>Loading...</div>}>
             <Switch>
-              <AuthRoute exact path={PATH.DEFAULT} />
-              <AuthRoute exact path={PATH.LOGIN_PATH} component={Login} />
-              <AuthRoute path={PATH.DASHBOARD_PATH} component={Dashboard} />
-              <AuthRoute component={NotFound} />
+              <Route exact path={PATH.LOGIN_PATH} component={Login} />
+              <Route exact path={PATH.REGISTER_PATH} component={Login} />
+              <Route exact path={PATH.FORGOT_PASSWORD} component={Login} />
+              <Route path={PATH.DEFAULT} component={AuthRoute} />
             </Switch>
           </Suspense>
         </Router>

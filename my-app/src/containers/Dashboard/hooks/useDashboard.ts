@@ -1,45 +1,85 @@
 import { useEffect, useState } from "react";
-import { useHistory, useLocation } from "react-router-dom";
-import { PATH } from "../../../util/constants";
+import firebaseApp, { db } from "../../../configs/firebase";
 
-export const useRemoveUid = (() => () => { localStorage.removeItem('uid') });
-
-export const useDashboard = () => {
-    const location = useLocation();
-    const history = useHistory();
-    const [title, setTitle] = useState('');
-    const [setting, setSetting] = useState(false);
-    const [showModal, setShowModal] = useState(false);
-
-    const handleShowModal = () => {
-        setShowModal(true);
+export const useSignOut = () => {
+    return function () {
+        firebaseApp.auth().signOut().then(() => {
+            console.log("Đăng xuất thành công!");
+        }).catch((error) => {
+            console.log(error);
+        });
     }
+}
+
+export const useTeacherManage = () => {
+    const [showModal, setshowModal] = useState(false);
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [age, setAge] = useState(0);
+    const [address, setAddress] = useState('');
+    const [data, setdata] = useState<any>([]);
 
     useEffect(() => {
-        switch (location.pathname) {
-            case PATH.DASHBOARD_PATH:
-                history.push(PATH.DASHBOARD_TEACHERS_PATH);
-                break;
-            case PATH.DASHBOARD_TEACHERS_PATH:
-                setSetting(false);
-                setTitle('Teacher management');
-                break;
-            case PATH.DASHBOARD_STUDENT_PATH:
-                setSetting(false);
-                setTitle('Student management');
-                break;
-            case PATH.DASHBOARD_CLASSES_PATH:
-                setSetting(false);
-                setTitle('Class management');
-                break;
-            case PATH.DASHBOARD_SETTING_PATH:
-                setSetting(true);
-                break;
-            default:
-                setSetting(false);
-                setTitle('');
-        }
-    }, [location]);
+        getData();
 
-    return { title, setting, showModal, setShowModal, handleShowModal }
-}
+        return () => {
+            setdata(null);
+        };
+    }, []);
+
+    const getData = () => {
+        db.collection("teachers").get().then((querySnapshot) => {
+            const array: any[] = [];
+            querySnapshot.forEach((doc) => {
+                array.push(doc.data());
+            });
+            return array;
+        }).then((snapshot) => {
+            setdata(snapshot);
+        })
+    };
+
+    return function () {
+        const onShowModal = () => setshowModal(true);
+        const onHideModal = () => setshowModal(false);
+
+        const handleChange = (event: any) => {
+            switch (event.target.name) {
+                case "first_name":
+                    setFirstName(event.target.value);
+                    break;
+                case "last_name":
+                    setLastName(event.target.value);
+                    break;
+                case "age":
+                    setAge(event.target.value);
+                    break;
+                case "address":
+                    setAddress(event.target.value);
+                    break;
+                default:
+            }
+        };
+        const handleAddNew = (event: any) => {
+            event.preventDefault();
+            db.collection("teachers").add({
+                id: new Date().getTime(),
+                first_name: firstName,
+                last_name: lastName,
+                age: age,
+                address: address
+            })
+                .then((docRef) => {
+                    console.log("Document written with ID: ", docRef.id);
+                    onHideModal();
+                    getData();
+                })
+                .catch((error) => {
+                    console.error("Error adding document: ", error);
+                });
+        };
+
+        return { showModal, onShowModal, onHideModal, handleChange, handleAddNew, data };
+    };
+};
+

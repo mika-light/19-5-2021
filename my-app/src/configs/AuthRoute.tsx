@@ -1,25 +1,34 @@
 import { PATH } from '../util/constants';
-import { Route, useHistory } from 'react-router-dom';
-import { useEffect } from 'react';
+import { Switch, Route, useHistory } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import firebaseApp from './firebase';
+import Dashboard from '../containers/Dashboard/views/Dashboard';
 
-const uid = localStorage.getItem('uid');
-
-const AuthRoute = (props: any) => {
+const AuthRoute = () => {
     const history = useHistory();
-    const path = props.path;
+    const [isLogged, setIsLogined] = useState(false);
 
     useEffect(() => {
-        if (!uid) {
-            history.replace(PATH.LOGIN_PATH);
-        }
-        else if (path === PATH.LOGIN_PATH || path === PATH.DEFAULT) {
-            history.replace(PATH.DASHBOARD_PATH);
-        }
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+        firebaseApp.auth().onAuthStateChanged((user) => {
+            if (user) {
+                setIsLogined(true);
+                history.push(PATH.DASHBOARD_PATH);
+            } else {
+                // User is signed out
+                history.push(PATH.LOGIN_PATH);
+            }
+        });
+    }, [history]);
 
-    return (
-        <Route {...props}></Route>
-    );
+    if (isLogged) {
+        return (
+            <Switch>
+                <Route path={PATH.DASHBOARD_PATH} component={Dashboard} />
+            </Switch>
+        );
+    }
+
+    return <Route path={PATH.DEFAULT} />
 }
 
 export default AuthRoute;
